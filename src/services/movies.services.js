@@ -38,7 +38,6 @@ const getAllMovies = async (limit, offset) => {
 
 const getMovieById = async (id) => {
   try {
-
     if (!id) throw createError(404, "ID inexistente");
 
     const movie = await db.Movie.findByPk(id, {
@@ -54,8 +53,8 @@ const getMovieById = async (id) => {
           association: "actors",
           attributes: ["id", "first_name", "last_name"],
           through: {
-            attributes : []
-          }
+            attributes: [],
+          },
         },
       ],
     });
@@ -63,7 +62,6 @@ const getMovieById = async (id) => {
     if (!movie) throw createError(400, "No existe pelicula con ese ID");
 
     return movie;
-
   } catch (error) {
     console.log(error);
     throw {
@@ -75,7 +73,6 @@ const getMovieById = async (id) => {
 
 const createMovie = async (dataMovie, actors) => {
   try {
-    
     const newMovie = await db.Movie.create(dataMovie);
 
     if (actors) {
@@ -91,9 +88,53 @@ const createMovie = async (dataMovie, actors) => {
     }
 
     return newMovie;
+  } catch (error) {
+    throw {
+      status: error.status || 500,
+      message: error.message || "hubo un error :C",
+    };
+  }
+};
+
+const updateMovie = async (id, dataMovie) => {
+  try {
+    const { title, awards, rating, length, release_date, genre_id, actors } =
+      dataMovie;
+
+    const movie = await db.Movie.findByPk(id);
+
+    movie.title = title || movie.title;
+    movie.awards = awards || movie.awards;
+    movie.rating = rating || movie.rating;
+    movie.length = length || movie.length;
+    movie.release_date = release_date || movie.release_date;
+    movie.genre_id = genre_id || movie.genre_id;
+
+    await movie.save();
+
+    if (actors) {
+      await db.Actor_Movie.destroy({
+        where: {
+          movie_id: id,
+        },
+      });
+
+      const actorsArray = actors.map(actor => {
+        return {
+          movie_id : id,
+          actor_id : actor
+        }
+      })
+
+      await db.Actor_Movie.bulkCreate(actorsArray,{
+        validate : true
+      })
+    }
+
+    return movie;
+
 
   } catch (error) {
-    console.log(error);
     throw {
       status: error.status || 500,
       message: error.message || "hubo un error :C",
@@ -105,4 +146,5 @@ module.exports = {
   getAllMovies,
   getMovieById,
   createMovie,
+  updateMovie,
 };

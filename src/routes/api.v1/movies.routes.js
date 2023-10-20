@@ -1,4 +1,4 @@
-const { list, detail, create } = require('../../controllers/moviesController')
+const { list, detail, create, update } = require('../../controllers/moviesController')
 
 const router = require('express').Router();
 
@@ -8,5 +8,6 @@ router
  .get('/',list)
  .get('/:id', detail)
  .post('/', create)
+ .put('/:id', update)
 
 module.exports = router
