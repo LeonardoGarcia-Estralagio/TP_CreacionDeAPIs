@@ -131,7 +131,7 @@ const updateMovie = async (id, dataMovie) => {
       })
     }
 
-    return movie;
+    return null;
 
 
   } catch (error) {
@@ -142,9 +142,32 @@ const updateMovie = async (id, dataMovie) => {
   }
 };
 
+const deleteMovie = async (id) => {
+  try {
+
+    await db.Actor_Movie.destroy({
+      where: {
+        movie_id : id
+      }
+    })
+    
+    const movie = await db.Movie.findByPk(id)
+    await movie.destroy()
+
+    return null
+
+  } catch (error) {
+    throw {
+      status: error.status || 500,
+      message: error.message || "hubo un error :C",
+    }
+  }
+}
+
 module.exports = {
   getAllMovies,
   getMovieById,
   createMovie,
   updateMovie,
+  deleteMovie
 };

@@ -5,6 +5,7 @@ const {
   getMovieById,
   createMovie,
   updateMovie,
+  deleteMovie,
 } = require("../services/movies.services");
 
 const moviesController = {
@@ -101,7 +102,6 @@ const moviesController = {
       return res.status(200).json({
         ok: true,
         msg: "Pelicula actualizada con exito",
-        data: movieUpdated,
         url: `${req.protocol}://${req.get("host")}/api/v1/movies/${
           movieUpdated.id
         }`,
@@ -114,14 +114,24 @@ const moviesController = {
       });
     }
   },
-  destroy: function (req, res) {
-    let movieId = req.params.id;
-    Movies.destroy({ where: { id: movieId }, force: true }) // force: true es para asegurar que se ejecute la acción
-      .then(() => {
-        return res.redirect("/movies");
+  destroy: async (req,res) => {
+    try {
+      
+      await deleteMovie(req.params.id);
+      return res.status(200).json({
+        ok: true,
+        msg: "Pelicula eliminada con exito"
       })
-      .catch((error) => res.send(error));
-  },
+      
+    } catch (error) {
+      return res.status(error.status || 500).json({
+        ok: false,
+        status: error.status || 500,
+        error: error.message || "Hubo un error :C",
+      });
+    }
+  }
+    
 };
 
 module.exports = moviesController;
